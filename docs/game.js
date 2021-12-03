@@ -269,41 +269,185 @@ Game.MovingObject.prototype = {
 Object.assign(Game.MovingObject.prototype, Game.Object.prototype);
 Game.MovingObject.prototype.constructor = Game.MovingObject;
 
-// /* The carrot class extends Game.Object and Game.Animation. */
-// Game.Carrot = function(x, y) {
 
-//   Game.Object.call(this, x, y, 7, 14);
-//   Game.Animator.call(this, Game.Carrot.prototype.frame_sets["twirl"], 15);
 
-//   this.frame_index = Math.floor(Math.random() * 2);
+// Lights Event
+Game.Lights = function(x, y) {
 
-//   /* base_x and base_y are the point around which the carrot revolves. position_x
-//   and y are used to track the vector facing away from the base point to give the carrot
-//   the floating effect. */
-//   this.base_x     = x;
-//   this.base_y     = y;
-//   this.position_x = Math.random() * Math.PI * 2;
-//   this.position_y = this.position_x * 2;
+  Game.Object.call(this, x, y, 7, 14);
+  Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 20);
 
-// };
-// Game.Carrot.prototype = {
+  this.frame_index = Math.floor(Math.random() * 2);
 
-//   frame_sets: { "twirl":[12, 13] },
+  this.x = x;
+  this.y = y;
+  this.danger = true;
 
-//   updatePosition:function() {
 
-//     this.position_x += 0.1;
-//     this.position_y += 0.2;
+  this.countLights = 0;
+  this.countDangerMax = 10000;
+  this.countSafeMax = 10000;
 
-//     this.x = this.base_x + Math.cos(this.position_x) * 2;
-//     this.y = this.base_y + Math.sin(this.position_y);
+  // Checks if player is inside lights object
+  this.inside = false;
 
-//   }
 
-// };
-// Object.assign(Game.Carrot.prototype, Game.Animator.prototype);
-// Object.assign(Game.Carrot.prototype, Game.Object.prototype);
-// Game.Carrot.prototype.constructor = Game.Carrot;
+  this.generateSafeMax();
+};
+
+Game.Lights.prototype = {
+  // frame_sets = { "danger":[8, 9],
+  //               "safe": [6, 7] }, 
+  
+  frame_sets : { 
+    "danger":[8, 9],
+    "safe": [6, 7]
+  },
+
+  toggleSafe:function() {
+    Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 20);
+    this.danger = false;
+  },
+  toggleDanger:function() {
+    Game.Animator.call(this, Game.Lights.prototype.frame_sets["danger"], 20);
+    this.danger = true;
+  },
+  killGame:function() {
+    console.log("Game Over!")
+  },
+  generateDangerMax:function() {
+    this.countDangerMax = Math.floor(Math.random() * 301 + 100);
+  },
+  generateSafeMax: function() {
+    this.countSafeMax = Math.floor(Math.random() * 301 + 100);
+  }
+
+
+
+};
+Object.assign(Game.Lights.prototype, Game.Animator.prototype);
+Object.assign(Game.Lights.prototype, Game.Object.prototype);
+Game.Lights.prototype.constructor = Game.Lights;
+
+
+// Leak Event
+Game.Leak = function(x, y) {
+
+  Game.Object.call(this, x, y, 7, 14);
+  Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 18);
+
+  this.frame_index = Math.floor(Math.random() * 2);
+
+  this.x = x;
+  this.y = y;
+  this.danger = true;
+
+
+  this.countLeak = 0;
+  this.countDangerMax = 10000;
+  this.countSafeMax = 10000;
+
+  // Checks if player is inside Leak object
+  this.inside = false;
+
+
+  this.generateSafeMax();
+};
+
+Game.Leak.prototype = {
+  // frame_sets = { "danger":[8, 9],
+  //               "safe": [6, 7] }, 
+  
+  frame_sets : { 
+    "danger":[8, 9],
+    "safe": [6, 7]
+  },
+
+  toggleSafe:function() {
+    Game.Animator.call(this, Game.Leak.prototype.frame_sets["safe"], 18);
+    this.danger = false;
+  },
+  toggleDanger:function() {
+    Game.Animator.call(this, Game.Leak.prototype.frame_sets["danger"], 18);
+    this.danger = true;
+  },
+  killGame:function() {
+    console.log("Game Over!")
+  },
+  generateDangerMax:function() {
+    this.countDangerMax = Math.floor(Math.random() * 301 + 100);
+  },
+  generateSafeMax: function() {
+    this.countSafeMax = Math.floor(Math.random() * 301 + 100);
+  }
+
+
+
+};
+Object.assign(Game.Leak.prototype, Game.Animator.prototype);
+Object.assign(Game.Leak.prototype, Game.Object.prototype);
+Game.Leak.prototype.constructor = Game.Leak;
+
+
+
+// Steer Event
+Game.Steer = function(x, y) {
+
+  Game.Object.call(this, x, y, 7, 14);
+  Game.Animator.call(this, Game.Steer.prototype.frame_sets["safe"], 15);
+
+  this.frame_index = Math.floor(Math.random() * 2);
+
+  this.x = x;
+  this.y = y;
+  this.danger = true;
+
+
+  this.countSteer = 0;
+  this.countDangerMax = 10000;
+  this.countSafeMax = 10000;
+
+  // Checks if player is inside lights object
+  this.inside = false;
+
+
+  this.generateSafeMax();
+};
+
+Game.Steer.prototype = {
+  // frame_sets = { "danger":[8, 9],
+  //               "safe": [6, 7] }, 
+  
+  frame_sets : { 
+    "danger":[8, 9],
+    "safe": [6, 7]
+  },
+
+  toggleSafe:function() {
+    Game.Animator.call(this, Game.Steer.prototype.frame_sets["safe"], 15);
+    this.danger = false;
+  },
+  toggleDanger:function() {
+    Game.Animator.call(this, Game.Steer.prototype.frame_sets["danger"], 15);
+    this.danger = true;
+  },
+  killGame:function() {
+    console.log("Game Over!")
+  },
+  generateDangerMax:function() {
+    this.countDangerMax = Math.floor(Math.random() * 301 + 100);
+  },
+  generateSafeMax: function() {
+    this.countSafeMax = Math.floor(Math.random() * 301 + 100);
+  }
+
+
+
+};
+Object.assign(Game.Steer.prototype, Game.Animator.prototype);
+Object.assign(Game.Steer.prototype, Game.Object.prototype);
+Game.Steer.prototype.constructor = Game.Steer;
+
 
 
 // Lights Event
@@ -351,10 +495,10 @@ Game.Lights.prototype = {
     console.log("Game Over!")
   },
   generateDangerMax:function() {
-    this.countDangerMax = Math.floor(Math.random() * 501 + 300);
+    this.countDangerMax = Math.floor(Math.random() * 301 + 100);
   },
   generateSafeMax: function() {
-    this.countSafeMax = Math.floor(Math.random() * 501 + 300);
+    this.countSafeMax = Math.floor(Math.random() * 301 + 100);
   }
 
 
@@ -365,24 +509,9 @@ Object.assign(Game.Lights.prototype, Game.Object.prototype);
 Game.Lights.prototype.constructor = Game.Lights;
 
 
-// Game.Grass = function(x, y) {
 
-//   Game.Animator.call(this, Game.Grass.prototype.frame_sets["wave"], 25);
 
-//   this.x = x;
-//   this.y = y;
 
-// };
-// Game.Grass.prototype = {
-
-//   frame_sets: {
-
-//     "wave":[14, 15, 16, 15]
-
-//   }
-
-// };
-// Object.assign(Game.Grass.prototype, Game.Animator.prototype);
 
 Game.Door = function(door) {
 
@@ -539,8 +668,11 @@ Game.World = function(friction = 0.85, gravity = 2) {
   this.height       = this.tile_set.tile_size * this.rows;
   this.width        = this.tile_set.tile_size * this.columns;
 
+  this.score        = 0;
+
 };
 Game.World.prototype = {
+
 
   constructor: Game.World,
 
@@ -582,6 +714,8 @@ Game.World.prototype = {
     this.rows               = zone.rows;
     this.zone_id            = zone.id;
     this.lights             = new Game.Lights(zone.lights[0] * this.tile_set.tile_size, zone.lights[1] * this.tile_set.tile_size + 2);
+    this.leak               = new Game.Leak(zone.leak[0] * this.tile_set.tile_size, zone.leak[1] * this.tile_set.tile_size + 2);
+    this.steer              = new Game.Steer(zone.steer[0] * this.tile_set.tile_size, zone.steer[1] * this.tile_set.tile_size + 2);
     
     for (let index = zone.doors.length - 1; index > -1; -- index) {
 
@@ -628,7 +762,7 @@ Game.World.prototype = {
 
     this.lights.animate();
 
-    // Checks for it safe time is up
+    // Checks for lights safe time is up
     if (this.lights.countLights == this.lights.countSafeMax) {
       
       this.lights.countLights = 0;
@@ -661,6 +795,76 @@ Game.World.prototype = {
     }
 
 
+        // Checks for leak safe time is up
+
+        this.leak.animate();
+        if (this.leak.countLeak == this.leak.countSafeMax) {
+      
+          this.leak.countLeak = 0;
+          this.leak.countSafeMax = 10000;
+          this.leak.toggleDanger();
+          this.leak.generateDangerMax();
+          this.leak.danger = true;
+          console.log("Safe Time Over!")
+    
+          // Saving it during danger time
+        } else if (this.leak.countLeak <= this.leak.countDangerMax && this.leak.danger) {
+          
+          if (this.leak.collideObject(this.player) && !this.leak.inside) {
+            this.leak.inside = true;
+    
+            this.leak.danger = false;
+            this.leak.toggleSafe();
+            this.leak.countLeak = 0;
+            this.leak.countDangerMax = 10000;
+            this.leak.generateSafeMax();
+            console.log("You Saved It!");
+    
+          } else if (!this.leak.collideObject(this.player)) {
+            this.leak.inside = false;
+          }
+    
+          // Failing to save in time, game over!
+        } else if (this.leak.countLeak > this.leak.countDangerMax) {
+          console.log("Game Over");
+        }
+
+
+      
+        // Checks for steer safe time is up
+
+        this.steer.animate();
+        if (this.steer.countSteer == this.steer.countSafeMax) {
+      
+          this.steer.countSteer = 0;
+          this.steer.countSafeMax = 10000;
+          this.steer.toggleDanger();
+          this.steer.generateDangerMax();
+          this.steer.danger = true;
+          console.log("Safe Time Over!")
+    
+          // Saving it during danger time
+        } else if (this.steer.countSteer <= this.steer.countDangerMax && this.steer.danger) {
+          
+          if (this.steer.collideObject(this.player) && !this.steer.inside) {
+            this.steer.inside = true;
+    
+            this.steer.danger = false;
+            this.steer.toggleSafe();
+            this.steer.countSteer = 0;
+            this.steer.countDangerMax = 10000;
+            this.steer.generateSafeMax();
+            console.log("You Saved It!");
+    
+          } else if (!this.steer.collideObject(this.player)) {
+            this.steer.inside = false;
+          }
+    
+          // Failing to save in time, game over!
+        } else if (this.steer.countLeak > this.steer.countDangerMax) {
+          console.log("Game Over");
+        }
+
 
 
 
@@ -679,7 +883,12 @@ Game.World.prototype = {
 
     this.player.updateAnimation();
 
+
+
     this.lights.countLights++;
+    this.leak.countLeak++;
+    this.steer.countSteer++;
+    this.score++;
 
   }
 

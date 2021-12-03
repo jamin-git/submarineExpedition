@@ -86,18 +86,9 @@ window.addEventListener("load", function(event) {
     display.drawMap   (assets_manager.tile_set_image,
     game.world.tile_set.columns, game.world.graphical_map, game.world.columns,  game.world.tile_set.tile_size);
 
-    // for (let index = game.world.carrots.length - 1; index > -1; -- index) {
 
-    //   let carrot = game.world.carrots[index];
 
-    //   frame = game.world.tile_set.frames[carrot.frame_value];
-
-    //   display.drawObject(assets_manager.tile_set_image,
-    //   frame.x, frame.y,
-    //   carrot.x + Math.floor(carrot.width * 0.5 - frame.width * 0.5) + frame.offset_x,
-    //   carrot.y + frame.offset_y, frame.width, frame.height);
-
-    // }
+    // Rendering the Lights Object!
 
     let lights = game.world.lights;
 
@@ -108,6 +99,28 @@ window.addEventListener("load", function(event) {
     lights.x + Math.floor(lights.width * 0.5 - frame.width * 0.5) + frame.offset_x,
     lights.y + frame.offset_y, frame.width, frame.height);
 
+    // Rendering the Leak Object!
+    let leak = game.world.leak;
+
+    frame = game.world.tile_set.frames[leak.frame_value];
+
+    display.drawObject(assets_manager.tile_set_image,
+    frame.x, frame.y,
+    leak.x + Math.floor(leak.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+    leak.y + frame.offset_y, frame.width, frame.height);
+
+    // Rendering the Steer Object!
+    let steer = game.world.steer;
+
+    frame = game.world.tile_set.frames[steer.frame_value];
+
+    display.drawObject(assets_manager.tile_set_image,
+    frame.x, frame.y,
+    steer.x + Math.floor(steer.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+    steer.y + frame.offset_y, frame.width, frame.height);
+
+
+
 
     frame = game.world.tile_set.frames[game.world.player.frame_value];
 
@@ -116,20 +129,8 @@ window.addEventListener("load", function(event) {
     game.world.player.x + Math.floor(game.world.player.width * 0.5 - frame.width * 0.5) + frame.offset_x,
     game.world.player.y + frame.offset_y, frame.width, frame.height);
 
-    // for (let index = game.world.grass.length - 1; index > -1; -- index) {
 
-    //   let grass = game.world.grass[index];
-
-    //   frame = game.world.tile_set.frames[grass.frame_value];
-
-    //   display.drawObject(assets_manager.tile_set_image,
-    //   frame.x, frame.y,
-    //   grass.x + frame.offset_x,
-    //   grass.y + frame.offset_y, frame.width, frame.height);
-
-    // }
-
-    p.innerHTML = "Score: " + game.world.lights.countLights;
+    p.innerHTML = "Score: " + game.world.score;
 
     display.render();
 
