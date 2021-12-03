@@ -1,222 +1,135 @@
-// Frank Poth 03/28/2018
+// Origin: Frank Poth
+// Update: Jacob Amin
 
-/* In part 4 I added collision detection and response for the tile map. I also
-fixed the tile map offset from part 3, where every graphical value was offset by
-1 due to the export format of the tile map editor I used. I added the collision_map
-and the collider object to handle collision. I also added a superclass called Object
-that all other game objects will extend. It has a bunch of methods for working with
-object position. */
 
 const Game = function() {
 
-  this.world = new Game.World();// All the changes are in the world class.
+  this.world    = new Game.World();
 
-  this.update = function() {
+  this.update   = function() {
 
     this.world.update();
 
   };
 
 };
-
 Game.prototype = { constructor : Game };
 
-Game.World = function(friction = 0.9, gravity = 3) {
+// Made the default animation type "loop":
+Game.Animator = function(frame_set, delay, mode = "loop") {
 
-  this.collider = new Game.World.Collider();// Here's the new collider class.
+ this.count       = 0;
+ this.delay       = (delay >= 1) ? delay : 1;
+ this.frame_set   = frame_set;
+ this.frame_index = 0;
+ this.frame_value = frame_set[0];
+ this.mode        = mode;
 
-  this.friction = friction;
-  this.gravity  = gravity;
+};
+Game.Animator.prototype = {
 
-  this.player   = new Game.World.Player();
+ constructor:Game.Animator,
 
-  this.columns   = 12;
-  this.rows      = 9;
-  this.tile_size = 16;
+ animate:function() {
 
-  /* This map stays the same. It is the graphical map. It only places graphics and
-  has nothing to do with collision. */
-  this.map = [01,01,01,01,01,01,01,01,01,01,01,01,
-              01,02,02,02,01,01,02,02,02,02,02,01,
-              01,02,02,02,02,02,02,01,01,01,01,01,
-              01,02,02,02,02,02,02,01,02,02,01,01,
-              01,02,02,03,02,03,02,02,02,01,01,01,
-              01,02,02,02,02,02,02,02,02,02,02,01,
-              01,02,02,01,01,01,02,02,01,02,01,01,
-              01,01,02,02,01,02,02,02,01,01,01,01,
-              01,01,01,01,01,01,01,01,01,01,01,01];
+   switch(this.mode) {
 
-  /* These collision values correspond to collision functions in the Collider class.
-  00 is nothing. everything else is run through a switch statement and routed to the
-  appropriate collision functions. These particular values aren't arbitrary. Their binary
-  representation can be used to describe which sides of the tile have boundaries.
+     case "loop" : this.loop(); break;
+     case "pause":              break;
 
-  0000 = 0  tile 0:    0    tile 1:   1     tile 2:    0    tile 15:    1
-  0001 = 1           0   0          0   0            0   1            1   1
-  0010 = 2             0              0                0                1
-  1111 = 15        No walls     Wall on top      Wall on Right      four walls
+   }
 
-  This binary representation can be used to describe which sides of a tile are boundaries.
-  Each bit represents a side: 0 0 0 0 = l b r t (left bottom right top). Keep in mind
-  that this is just one way to look at it. You could assign your collision values
-  any way you want. This is just the way I chose to keep track of which values represent
-  which tiles. I haven't tested this representation approach with more advanced shapes. */
+ },
 
-  this.collision_map = [00,04,04,04,00,00,04,04,04,04,04,00,
-                        02,00,00,00,12,06,00,00,00,00,00,08,
-                        02,00,00,00,00,00,00,09,05,05,01,00,
-                        00,07,00,00,00,00,00,14,00,00,08,00,
-                        02,00,00,01,00,01,00,00,00,13,04,00,
-                        02,00,00,00,00,00,00,00,00,00,00,08,
-                        02,00,00,13,01,07,00,00,11,00,09,00,
-                        00,03,00,00,10,00,00,00,08,01,00,00,
-                        00,00,01,01,00,01,01,01,00,00,00,00];
+ changeFrameSet(frame_set, mode, delay = 10, frame_index = 0) {
 
-  this.height   = this.tile_size * this.rows;
-  this.width    = this.tile_size * this.columns;
+   if (this.frame_set === frame_set) { return; }
+
+   this.count       = 0;
+   this.delay       = delay;
+   this.frame_set   = frame_set;
+   this.frame_index = frame_index;
+   this.frame_value = frame_set[frame_index];
+   this.mode        = mode;
+
+ },
+
+ loop:function() {
+
+   this.count ++;
+
+   while(this.count > this.delay) {
+
+     this.count -= this.delay;
+
+     this.frame_index = (this.frame_index < this.frame_set.length - 1) ? this.frame_index + 1 : 0;
+
+     this.frame_value = this.frame_set[this.frame_index];
+
+   }
+
+ }
 
 };
 
-Game.World.prototype = {
+Game.Collider = function() {
 
-  constructor: Game.World,
-
-  /* This function has been hugely modified. */
-  collideObject:function(object) {
-
-    /* Let's make sure we can't leave the world boundaries. */
-    if      (object.getLeft()   < 0          ) { object.setLeft(0);             object.velocity_x = 0; }
-    else if (object.getRight()  > this.width ) { object.setRight(this.width);   object.velocity_x = 0; }
-    if      (object.getTop()    < 0          ) { object.setTop(0);              object.velocity_y = 0; }
-    else if (object.getBottom() > this.height) { object.setBottom(this.height); object.velocity_y = 0; object.jumping = false; }
-
-    /* Now let's collide with some tiles!!! The side values refer to the tile grid
-    row and column spaces that the object is occupying on each of its sides. For
-    instance bottom refers to the row in the collision map that the bottom of the
-    object occupies. Right refers to the column in the collision map occupied by
-    the right side of the object. Value refers to the value of a collision tile in
-    the map under the specified row and column occupied by the object. */
-    var bottom, left, right, top, value;
-
-    /* First we test the top left corner of the object. We get the row and column
-    he occupies in the collision map, then we get the value from the collision map
-    at that row and column. In this case the row is top and the column is left. Then
-    we hand the information to the collider's collide function. */
-    top    = Math.floor(object.getTop()    / this.tile_size);
-    left   = Math.floor(object.getLeft()   / this.tile_size);
-    value  = this.collision_map[top * this.columns + left];
-    this.collider.collide(value, object, left * this.tile_size, top * this.tile_size, this.tile_size);
-
-    /* We must redifine top since the last collision check because the object may
-    have moved since the last collision check. Also, the reason I check the top corners
-    first is because if the object is moved down while checking the top, he will be
-    moved back up when checking the bottom, and it is better to look like he is standing
-    on the ground than being pushed down through the ground by the cieling. */
-    top    = Math.floor(object.getTop()    / this.tile_size);
-    right  = Math.floor(object.getRight()  / this.tile_size);
-    value  = this.collision_map[top * this.columns + right];
-    this.collider.collide(value, object, right * this.tile_size, top * this.tile_size, this.tile_size);
-
-    bottom = Math.floor(object.getBottom() / this.tile_size);
-    left   = Math.floor(object.getLeft()   / this.tile_size);
-    value  = this.collision_map[bottom * this.columns + left];
-    this.collider.collide(value, object, left * this.tile_size, bottom * this.tile_size, this.tile_size);
-
-
-    bottom = Math.floor(object.getBottom() / this.tile_size);
-    right  = Math.floor(object.getRight()  / this.tile_size);
-    value  = this.collision_map[bottom * this.columns + right];
-    this.collider.collide(value, object, right * this.tile_size, bottom * this.tile_size, this.tile_size);
-
-  },
-
-  update:function() {
-
-    this.player.velocity_y += this.gravity;
-    this.player.update();
-
-    this.player.velocity_x *= this.friction;
-    this.player.velocity_y *= this.friction;
-
-    this.collideObject(this.player);
-
-  }
-
-};
-
-Game.World.Collider = function() {
-
-  /* This is the function routing method. Basically, you know what the tile looks like
-  from its value. You know which object you want to collide with, and you know the
-  x and y position of the tile as well as its dimensions. This function just decides
-  which collision functions to use based on the value and allows you to tweak the
-  other values to fit the specific tile shape. */
+  /* I changed this so all the checks happen in y first order. */
   this.collide = function(value, object, tile_x, tile_y, tile_size) {
 
-    switch(value) { // which value does our tile have?
+    switch(value) {
 
-      /* All 15 tile types can be described with only 4 collision methods. These
-      methods are mixed and matched for each unique tile. */
-
-      case  1: this.collidePlatformTop      (object, tile_y            ); break;
-      case  2: this.collidePlatformRight    (object, tile_x + tile_size); break;
-      case  3: if (this.collidePlatformTop  (object, tile_y            )) return;// If there's a collision, we don't need to check for anything else.
-               this.collidePlatformRight    (object, tile_x + tile_size); break;
-      case  4: this.collidePlatformBottom   (object, tile_y + tile_size); break;
-      case  5: if (this.collidePlatformTop  (object, tile_y            )) return;
-               this.collidePlatformBottom   (object, tile_y + tile_size); break;
-      case  6: if (this.collidePlatformRight(object, tile_x + tile_size)) return;
-               this.collidePlatformBottom   (object, tile_y + tile_size); break;
-      case  7: if (this.collidePlatformTop  (object, tile_y            )) return;
-               if (this.collidePlatformRight(object, tile_x + tile_size)) return;
-               this.collidePlatformBottom   (object, tile_y + tile_size); break;
-      case  8: this.collidePlatformLeft     (object, tile_x            ); break;
-      case  9: if (this.collidePlatformTop  (object, tile_y            )) return;
-               this.collidePlatformLeft     (object, tile_x            ); break;
-      case 10: if (this.collidePlatformLeft (object, tile_x            )) return;
-               this.collidePlatformRight    (object, tile_x + tile_size); break;
-      case 11: if (this.collidePlatformTop  (object, tile_y            )) return;
-               if (this.collidePlatformLeft (object, tile_x            )) return;
-               this.collidePlatformRight    (object, tile_x + tile_size); break;
-      case 12: if (this.collidePlatformLeft (object, tile_x            )) return;
-               this.collidePlatformBottom   (object, tile_y + tile_size); break;
-      case 13: if (this.collidePlatformTop  (object, tile_y            )) return;
-               if (this.collidePlatformLeft (object, tile_x            )) return;
-               this.collidePlatformBottom   (object, tile_y + tile_size); break;
-      case 14: if (this.collidePlatformLeft (object, tile_x            )) return;
-               if (this.collidePlatformRight(object, tile_x            )) return;
-               this.collidePlatformBottom   (object, tile_y + tile_size); break;
-      case 15: if (this.collidePlatformTop  (object, tile_y            )) return;
-               if (this.collidePlatformLeft (object, tile_x            )) return;
-               if (this.collidePlatformRight(object, tile_x + tile_size)) return;
-               this.collidePlatformBottom   (object, tile_y + tile_size); break;
+      case  1:     this.collidePlatformTop    (object, tile_y            ); break;
+      case  2:     this.collidePlatformRight  (object, tile_x + tile_size); break;
+      case  3: if (this.collidePlatformTop    (object, tile_y            )) return;
+                   this.collidePlatformRight  (object, tile_x + tile_size); break;
+      case  4:     this.collidePlatformBottom (object, tile_y + tile_size); break;
+      case  5: if (this.collidePlatformTop    (object, tile_y            )) return;
+                   this.collidePlatformBottom (object, tile_y + tile_size); break;
+      case  6: if (this.collidePlatformRight  (object, tile_x + tile_size)) return;
+                   this.collidePlatformBottom (object, tile_y + tile_size); break;
+      case  7: if (this.collidePlatformTop    (object, tile_y            )) return;
+               if (this.collidePlatformBottom (object, tile_y + tile_size)) return;
+                   this.collidePlatformRight  (object, tile_x + tile_size); break;
+      case  8:     this.collidePlatformLeft   (object, tile_x            ); break;
+      case  9: if (this.collidePlatformTop    (object, tile_y            )) return;
+                   this.collidePlatformLeft   (object, tile_x            ); break;
+      case 10: if (this.collidePlatformLeft   (object, tile_x            )) return;
+                   this.collidePlatformRight  (object, tile_x + tile_size); break;
+      case 11: if (this.collidePlatformTop    (object, tile_y            )) return;
+               if (this.collidePlatformLeft   (object, tile_x            )) return;
+                   this.collidePlatformRight  (object, tile_x + tile_size); break;
+      case 12: if (this.collidePlatformBottom (object, tile_y + tile_size)) return;
+                   this.collidePlatformLeft   (object, tile_x            ); break;
+      case 13: if (this.collidePlatformTop    (object, tile_y            )) return;
+               if (this.collidePlatformBottom (object, tile_y + tile_size)) return;
+                   this.collidePlatformLeft   (object, tile_x            ); break;
+      case 14: if (this.collidePlatformBottom (object, tile_y + tile_size)) return;
+               if (this.collidePlatformLeft   (object, tile_x            )) return;
+                   this.collidePlatformRight  (object, tile_x + tile_size); break;
+      case 15: if (this.collidePlatformTop    (object, tile_y            )) return;
+               if (this.collidePlatformBottom (object, tile_y + tile_size)) return;
+               if (this.collidePlatformLeft   (object, tile_x            )) return;
+                   this.collidePlatformRight  (object, tile_x + tile_size); break;
 
     }
 
   }
 
 };
+Game.Collider.prototype = {
 
-/* Here's where all of the collision functions live. */
-Game.World.Collider.prototype = {
+  constructor: Game.Collider,
 
-  constructor: Game.World.Collider,
-
-  /* This will resolve a collision (if any) between an object and the y location of
-  some tile's bottom. All of these functions are pretty much the same, just adjusted
-  for different sides of a tile and different trajectories of the object. */
   collidePlatformBottom:function(object, tile_bottom) {
 
-    /* If the top of the object is above the bottom of the tile and on the previous
-    frame the top of the object was below the bottom of the tile, we have entered into
-    this tile. Pretty simple stuff. */
     if (object.getTop() < tile_bottom && object.getOldTop() >= tile_bottom) {
 
-      object.setTop(tile_bottom);// Move the top of the object to the bottom of the tile.
-      object.velocity_y = 0;     // Stop moving in that direction.
-      return true;               // Return true because there was a collision.
+      object.setTop(tile_bottom);
+      object.velocity_y = 0;
+      return true;
 
-    } return false;              // Return false if there was no collision.
+    } return false;
 
   },
 
@@ -224,7 +137,7 @@ Game.World.Collider.prototype = {
 
     if (object.getRight() > tile_left && object.getOldRight() <= tile_left) {
 
-      object.setRight(tile_left - 0.01);// -0.01 is to fix a small problem with rounding
+      object.setRight(tile_left - 0.01);
       object.velocity_x = 0;
       return true;
 
@@ -259,84 +172,466 @@ Game.World.Collider.prototype = {
 
  };
 
-/* The object class is just a basic rectangle with a bunch of prototype functions
-to help us work with positioning this rectangle. */
-Game.World.Object = function(x, y, width, height) {
+// Added default values of 0 for offset_x and offset_y
+Game.Frame = function(x, y, width, height, offset_x = 0, offset_y = 0) {
+
+  this.x        = x;
+  this.y        = y;
+  this.width    = width;
+  this.height   = height;
+  this.offset_x = offset_x;
+  this.offset_y = offset_y;
+
+};
+Game.Frame.prototype = { constructor: Game.Frame };
+
+Game.Object = function(x, y, width, height) {
 
  this.height = height;
  this.width  = width;
  this.x      = x;
- this.x_old  = x;
  this.y      = y;
- this.y_old  = y;
+
+};
+Game.Object.prototype = {
+
+  constructor:Game.Object,
+
+  /* Now does rectangular collision detection. */
+  collideObject:function(object) {
+
+    if (this.getRight()  < object.getLeft()  ||
+        this.getBottom() < object.getTop()   ||
+        this.getLeft()   > object.getRight() ||
+        this.getTop()    > object.getBottom()) return false;
+
+    return true;
+
+  },
+
+  /* Does rectangular collision detection with the center of the object. */
+  collideObjectCenter:function(object) {
+
+    let center_x = object.getCenterX();
+    let center_y = object.getCenterY();
+
+    if (center_x < this.getLeft() || center_x > this.getRight() ||
+        center_y < this.getTop()  || center_y > this.getBottom()) return false;
+
+    return true;
+
+  },
+
+  getBottom : function()  { return this.y + this.height;       },
+  getCenterX: function()  { return this.x + this.width  * 0.5; },
+  getCenterY: function()  { return this.y + this.height * 0.5; },
+  getLeft   : function()  { return this.x;                     },
+  getRight  : function()  { return this.x + this.width;        },
+  getTop    : function()  { return this.y;                     },
+  setBottom : function(y) { this.y = y - this.height;          },
+  setCenterX: function(x) { this.x = x - this.width  * 0.5;    },
+  setCenterY: function(y) { this.y = y - this.height * 0.5;    },
+  setLeft   : function(x) { this.x = x;                        },
+  setRight  : function(x) { this.x = x - this.width;           },
+  setTop    : function(y) { this.y = y;                        }
 
 };
 
-Game.World.Object.prototype = {
+Game.MovingObject = function(x, y, width, height, velocity_max = 15) {
 
-  constructor:Game.World.Object,
+  Game.Object.call(this, x, y, width, height);
 
-  /* These functions are used to get and set the different side positions of the object. */
-  getBottom:   function()  { return this.y     + this.height; },
-  getLeft:     function()  { return this.x;                   },
-  getRight:    function()  { return this.x     + this.width;  },
-  getTop:      function()  { return this.y;                   },
-  getOldBottom:function()  { return this.y_old + this.height; },
-  getOldLeft:  function()  { return this.x_old;               },
-  getOldRight: function()  { return this.x_old + this.width;  },
-  getOldTop:   function()  { return this.y_old                },
-  setBottom:   function(y) { this.y     = y    - this.height; },
-  setLeft:     function(x) { this.x     = x;                  },
-  setRight:    function(x) { this.x     = x    - this.width;  },
-  setTop:      function(y) { this.y     = y;                  },
-  setOldBottom:function(y) { this.y_old = y    - this.height; },
-  setOldLeft:  function(x) { this.x_old = x;                  },
-  setOldRight: function(x) { this.x_old = x    - this.width;  },
-  setOldTop:   function(y) { this.y_old = y;                  }
+  this.jumping      = false;
+  this.velocity_max = velocity_max;// added velocity_max so velocity can't go past 16
+  this.velocity_x   = 0;
+  this.velocity_y   = 0;
+  this.x_old        = x;
+  this.y_old        = y;
+
+};
+/* I added setCenterX, setCenterY, getCenterX, and getCenterY */
+Game.MovingObject.prototype = {
+
+  getOldBottom : function()  { return this.y_old + this.height;       },
+  getOldCenterX: function()  { return this.x_old + this.width  * 0.5; },
+  getOldCenterY: function()  { return this.y_old + this.height * 0.5; },
+  getOldLeft   : function()  { return this.x_old;                     },
+  getOldRight  : function()  { return this.x_old + this.width;        },
+  getOldTop    : function()  { return this.y_old;                     },
+  setOldBottom : function(y) { this.y_old = y    - this.height;       },
+  setOldCenterX: function(x) { this.x_old = x    - this.width  * 0.5; },
+  setOldCenterY: function(y) { this.y_old = y    - this.height * 0.5; },
+  setOldLeft   : function(x) { this.x_old = x;                        },
+  setOldRight  : function(x) { this.x_old = x    - this.width;        },
+  setOldTop    : function(y) { this.y_old = y;                        }
+
+};
+Object.assign(Game.MovingObject.prototype, Game.Object.prototype);
+Game.MovingObject.prototype.constructor = Game.MovingObject;
+
+// /* The carrot class extends Game.Object and Game.Animation. */
+// Game.Carrot = function(x, y) {
+
+//   Game.Object.call(this, x, y, 7, 14);
+//   Game.Animator.call(this, Game.Carrot.prototype.frame_sets["twirl"], 15);
+
+//   this.frame_index = Math.floor(Math.random() * 2);
+
+//   /* base_x and base_y are the point around which the carrot revolves. position_x
+//   and y are used to track the vector facing away from the base point to give the carrot
+//   the floating effect. */
+//   this.base_x     = x;
+//   this.base_y     = y;
+//   this.position_x = Math.random() * Math.PI * 2;
+//   this.position_y = this.position_x * 2;
+
+// };
+// Game.Carrot.prototype = {
+
+//   frame_sets: { "twirl":[12, 13] },
+
+//   updatePosition:function() {
+
+//     this.position_x += 0.1;
+//     this.position_y += 0.2;
+
+//     this.x = this.base_x + Math.cos(this.position_x) * 2;
+//     this.y = this.base_y + Math.sin(this.position_y);
+
+//   }
+
+// };
+// Object.assign(Game.Carrot.prototype, Game.Animator.prototype);
+// Object.assign(Game.Carrot.prototype, Game.Object.prototype);
+// Game.Carrot.prototype.constructor = Game.Carrot;
+
+
+// Lights Event
+Game.Lights = function(x, y) {
+
+  Game.Object.call(this, x, y, 7, 14);
+  Game.Animator.call(this, Game.Lights.prototype.frame_sets["danger"], 15);
+
+  this.frame_index = Math.floor(Math.random() * 2);
+
+  this.x = x;
+  this.y = y;
+  this.danger = true;
+  this.countLights = 0;
 
 };
 
-Game.World.Player = function(x, y) {
+Game.Lights.prototype = {
+  // frame_sets = { "danger":[8, 9],
+  //               "safe": [6, 7] }, 
+  
+  frame_sets : { 
+    "danger":[8, 9],
+    "safe": [6, 7]
+  },
 
-  Game.World.Object.call(this, 100, 100, 12, 12);
+  toggleSafe:function() {
+    Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 15);
+    this.danger = false;
+  },
+  toggleDanger:function() {
+    Game.Animator.call(this, Game.Lights.prototype.frame_sets["danger"], 15);
+    this.danger = true;
+  },
+  killGame:function() {
+    console.log("Game Over!")
+  },
 
-  // Outline
-  this.color1     = "#FF4983";
-  // Inner
-  this.color2     = "#f0f0f0";
 
-  this.jumping    = true;
-  this.velocity_x = 0;
-  this.velocity_y = 0;
 
 };
+Object.assign(Game.Lights.prototype, Game.Animator.prototype);
+Object.assign(Game.Lights.prototype, Game.Object.prototype);
+Game.Lights.prototype.constructor = Game.Lights;
 
-Game.World.Player.prototype = {
 
-  jump:function() {
+// Game.Grass = function(x, y) {
 
-    if (!this.jumping) {
+//   Game.Animator.call(this, Game.Grass.prototype.frame_sets["wave"], 25);
+
+//   this.x = x;
+//   this.y = y;
+
+// };
+// Game.Grass.prototype = {
+
+//   frame_sets: {
+
+//     "wave":[14, 15, 16, 15]
+
+//   }
+
+// };
+// Object.assign(Game.Grass.prototype, Game.Animator.prototype);
+
+Game.Door = function(door) {
+
+ Game.Object.call(this, door.x, door.y, door.width, door.height);
+
+ this.destination_x    = door.destination_x;
+ this.destination_y    = door.destination_y;
+ this.destination_zone = door.destination_zone;
+
+};
+Game.Door.prototype = {};
+Object.assign(Game.Door.prototype, Game.Object.prototype);
+Game.Door.prototype.constructor = Game.Door;
+
+Game.Player = function(x, y) {
+
+  Game.MovingObject.call(this, x, y, 14, 14);
+
+  Game.Animator.call(this, Game.Player.prototype.frame_sets["idle-left"], 10);
+
+  this.jumping     = true;
+  this.direction_x = -1;
+  this.velocity_x  = 0;
+  this.velocity_y  = 0;
+
+};
+Game.Player.prototype = {
+
+  frame_sets: {
+
+    "idle-left" : [0],
+    "jump-left" : [1],
+    "move-left" : [2],
+    "idle-right": [3],
+    "jump-right": [4],
+    "move-right": [5],
+
+  },
+
+  jump: function() {
+
+    /* Made it so you can only jump if you aren't falling faster than 10px per frame. */
+    if (!this.jumping && this.velocity_y < 10) {
 
       this.jumping     = true;
-      this.velocity_y -= 20;
+      this.velocity_y -= 13;
 
     }
 
   },
 
-  moveLeft:function()  { this.velocity_x -= 0.5; },
-  moveRight:function() { this.velocity_x += 0.5; },
+  moveLeft: function() {
 
-  update:function() {
+    this.direction_x = -1;
+    this.velocity_x -= 0.55;
+
+  },
+
+  moveRight:function(frame_set) {
+
+    this.direction_x = 1;
+    this.velocity_x += 0.55;
+
+  },
+
+  updateAnimation:function() {
+
+    if (this.velocity_y < 0) {
+
+      if (this.direction_x < 0) this.changeFrameSet(this.frame_sets["jump-left"], "pause");
+      else this.changeFrameSet(this.frame_sets["jump-right"], "pause");
+
+    } else if (this.direction_x < 0) {
+
+      if (this.velocity_x < -0.1) this.changeFrameSet(this.frame_sets["move-left"], "loop", 5);
+      else this.changeFrameSet(this.frame_sets["idle-left"], "pause");
+
+    } else if (this.direction_x > 0) {
+
+      if (this.velocity_x > 0.1) this.changeFrameSet(this.frame_sets["move-right"], "loop", 5);
+      else this.changeFrameSet(this.frame_sets["idle-right"], "pause");
+
+    }
+
+    this.animate();
+
+  },
+
+  updatePosition:function(gravity, friction) {
 
     this.x_old = this.x;
     this.y_old = this.y;
+
+    this.velocity_y += gravity;
+    this.velocity_x *= friction;
+
+    /* Made it so that velocity cannot exceed velocity_max */
+    if (Math.abs(this.velocity_x) > this.velocity_max)
+    this.velocity_x = this.velocity_max * Math.sign(this.velocity_x);
+
+    if (Math.abs(this.velocity_y) > this.velocity_max)
+    this.velocity_y = this.velocity_max * Math.sign(this.velocity_y);
+
     this.x    += this.velocity_x;
     this.y    += this.velocity_y;
 
   }
 
 };
+Object.assign(Game.Player.prototype, Game.MovingObject.prototype);
+Object.assign(Game.Player.prototype, Game.Animator.prototype);
+Game.Player.prototype.constructor = Game.Player;
 
-Object.assign(Game.World.Player.prototype, Game.World.Object.prototype);
-Game.World.Player.prototype.constructor = Game.World.Player;
+Game.TileSet = function(columns, tile_size) {
+
+  this.columns    = columns;
+  this.tile_size  = tile_size;
+
+  let f = Game.Frame;
+
+  this.frames = [new f(49, 1, 14, 14, 0, 0), // idle-left
+    new f(65, 1, 14, 14, 0, 0), // jump-left
+    new f(97, 1, 14, 14, 0, 0), // walk-left
+    new f(49, 1, 14, 14, 0, 0), // idle-right
+    new f(65, 1, 14, 14, 0, 0), // jump-right
+    new f(81, 1, 14, 14, 0, 0), // walk-right
+    new f(0, 16, 14, 14, 0, 0), new f(129, 0, 14, 14, 0, 0), //lights-safe
+    new f(0, 16, 14, 14, 0, 0), new f(113, 0, 14, 14, 0, 0)  //lights-danger
+];
+
+};
+Game.TileSet.prototype = { constructor: Game.TileSet };
+
+Game.World = function(friction = 0.85, gravity = 2) {
+
+  this.collider     = new Game.Collider();
+
+  this.friction     = friction;
+  this.gravity      = gravity;
+
+  this.columns      = 12;
+  this.rows         = 9;
+
+  this.tile_set     = new Game.TileSet(8, 16);
+  this.player       = new Game.Player(32, 76);
+
+  this.zone_id      = "00";
+
+  this.lights       = undefined; // the array of carrots in this zone;
+  this.carrot_count = 0;// the number of carrots you have.
+  this.doors        = [];
+  this.door         = undefined;
+
+  this.height       = this.tile_set.tile_size * this.rows;
+  this.width        = this.tile_set.tile_size * this.columns;
+
+};
+Game.World.prototype = {
+
+  constructor: Game.World,
+
+  collideObject:function(object) {
+
+    /* I got rid of the world boundary collision. Now it's up to the tiles to keep
+    the player from falling out of the world. */
+
+    var bottom, left, right, top, value;
+
+    top    = Math.floor(object.getTop()    / this.tile_set.tile_size);
+    left   = Math.floor(object.getLeft()   / this.tile_set.tile_size);
+    value  = this.collision_map[top * this.columns + left];
+    this.collider.collide(value, object, left * this.tile_set.tile_size, top * this.tile_set.tile_size, this.tile_set.tile_size);
+
+    top    = Math.floor(object.getTop()    / this.tile_set.tile_size);
+    right  = Math.floor(object.getRight()  / this.tile_set.tile_size);
+    value  = this.collision_map[top * this.columns + right];
+    this.collider.collide(value, object, right * this.tile_set.tile_size, top * this.tile_set.tile_size, this.tile_set.tile_size);
+
+    bottom = Math.floor(object.getBottom() / this.tile_set.tile_size);
+    left   = Math.floor(object.getLeft()   / this.tile_set.tile_size);
+    value  = this.collision_map[bottom * this.columns + left];
+    this.collider.collide(value, object, left * this.tile_set.tile_size, bottom * this.tile_set.tile_size, this.tile_set.tile_size);
+
+    bottom = Math.floor(object.getBottom() / this.tile_set.tile_size);
+    right  = Math.floor(object.getRight()  / this.tile_set.tile_size);
+    value  = this.collision_map[bottom * this.columns + right];
+    this.collider.collide(value, object, right * this.tile_set.tile_size, bottom * this.tile_set.tile_size, this.tile_set.tile_size);
+
+  },
+
+  setup:function(zone) {
+
+    this.doors              = new Array();
+    this.collision_map      = zone.collision_map;
+    this.graphical_map      = zone.graphical_map;
+    this.columns            = zone.columns;
+    this.rows               = zone.rows;
+    this.zone_id            = zone.id;
+    this.lights             = new Game.Lights(zone.lights[0] * this.tile_set.tile_size, zone.lights[1] * this.tile_set.tile_size + 2);
+    
+    for (let index = zone.doors.length - 1; index > -1; -- index) {
+
+      let door = zone.doors[index];
+      this.doors[index] = new Game.Door(door);
+
+    }
+
+    if (this.door) {
+
+      if (this.door.destination_x != -1) {
+
+        this.player.setCenterX   (this.door.destination_x);
+        this.player.setOldCenterX(this.door.destination_x);// It's important to reset the old position as well.
+
+      }
+
+      if (this.door.destination_y != -1) {
+
+        this.player.setCenterY   (this.door.destination_y);
+        this.player.setOldCenterY(this.door.destination_y);
+
+      }
+
+      this.door = undefined;// Make sure to reset this.door so we don't trigger a zone load.
+
+    }
+
+  },
+
+  update:function() {
+
+    this.player.updatePosition(this.gravity, this.friction);
+
+
+    this.collideObject(this.player);
+
+    this.lights.animate();
+
+
+    if (this.lights.collideObject(this.player)) {
+      if (this.lights.danger) {
+        this.lights.toggleSafe();
+      } else {
+        this.lights.toggleDanger();
+      }
+    }
+
+    for(let index = this.doors.length - 1; index > -1; -- index) {
+
+      let door = this.doors[index];
+
+      if (door.collideObjectCenter(this.player)) {
+
+        this.door = door;
+
+      };
+
+    }
+
+
+    this.player.updateAnimation();
+
+    this.lights.countLights++;
+
+  }
+
+};
