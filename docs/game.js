@@ -310,15 +310,24 @@ Game.MovingObject.prototype.constructor = Game.MovingObject;
 Game.Lights = function(x, y) {
 
   Game.Object.call(this, x, y, 7, 14);
-  Game.Animator.call(this, Game.Lights.prototype.frame_sets["danger"], 15);
+  Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 15);
 
   this.frame_index = Math.floor(Math.random() * 2);
 
   this.x = x;
   this.y = y;
   this.danger = true;
-  this.countLights = 0;
 
+
+  this.countLights = 0;
+  this.countDangerMax = 10000;
+  this.countSafeMax = 10000;
+
+  // Checks if player is inside lights object
+  this.inside = false;
+
+
+  this.generateSafeMax();
 };
 
 Game.Lights.prototype = {
@@ -341,6 +350,12 @@ Game.Lights.prototype = {
   killGame:function() {
     console.log("Game Over!")
   },
+  generateDangerMax:function() {
+    this.countDangerMax = Math.floor(Math.random() * 501 + 300);
+  },
+  generateSafeMax: function() {
+    this.countSafeMax = Math.floor(Math.random() * 501 + 300);
+  }
 
 
 
@@ -604,16 +619,50 @@ Game.World.prototype = {
 
     this.collideObject(this.player);
 
+
+
+
+
+
+    // Lights Functionality
+
     this.lights.animate();
 
+    // Checks for it safe time is up
+    if (this.lights.countLights == this.lights.countSafeMax) {
+      
+      this.lights.countLights = 0;
+      this.lights.countSafeMax = 10000;
+      this.lights.toggleDanger();
+      this.lights.generateDangerMax();
+      this.lights.danger = true;
+      console.log("Safe Time Over!")
 
-    if (this.lights.collideObject(this.player)) {
-      if (this.lights.danger) {
+      // Saving it during danger time
+    } else if (this.lights.countLights <= this.lights.countDangerMax && this.lights.danger) {
+      
+      if (this.lights.collideObject(this.player) && !this.lights.inside) {
+        this.lights.inside = true;
+
+        this.lights.danger = false;
         this.lights.toggleSafe();
-      } else {
-        this.lights.toggleDanger();
+        this.lights.countLights = 0;
+        this.lights.countDangerMax = 10000;
+        this.lights.generateSafeMax();
+        console.log("You Saved It!");
+
+      } else if (!this.lights.collideObject(this.player)) {
+        this.lights.inside = false;
       }
+
+      // Failing to save in time, game over!
+    } else if (this.lights.countLights > this.lights.countDangerMax) {
+      console.log("Game Over");
     }
+
+
+
+
 
     for(let index = this.doors.length - 1; index > -1; -- index) {
 
