@@ -669,6 +669,7 @@ Game.World = function(friction = 0.85, gravity = 2) {
   this.width        = this.tile_set.tile_size * this.columns;
 
   this.score        = 0;
+  this.over = false;
 
 };
 Game.World.prototype = {
@@ -716,7 +717,7 @@ Game.World.prototype = {
     this.lights             = new Game.Lights(zone.lights[0] * this.tile_set.tile_size, zone.lights[1] * this.tile_set.tile_size + 2);
     this.leak               = new Game.Leak(zone.leak[0] * this.tile_set.tile_size, zone.leak[1] * this.tile_set.tile_size + 2);
     this.steer              = new Game.Steer(zone.steer[0] * this.tile_set.tile_size, zone.steer[1] * this.tile_set.tile_size + 2);
-    
+
     for (let index = zone.doors.length - 1; index > -1; -- index) {
 
       let door = zone.doors[index];
@@ -791,7 +792,8 @@ Game.World.prototype = {
 
       // Failing to save in time, game over!
     } else if (this.lights.countLights > this.lights.countDangerMax) {
-      console.log("Game Over");
+      //console.log("Game Over");
+      //this.over = true;
     }
 
 
@@ -826,7 +828,8 @@ Game.World.prototype = {
     
           // Failing to save in time, game over!
         } else if (this.leak.countLeak > this.leak.countDangerMax) {
-          console.log("Game Over");
+          //console.log("Game Over");
+          //this.over = true;
         }
 
 
@@ -861,8 +864,9 @@ Game.World.prototype = {
           }
     
           // Failing to save in time, game over!
-        } else if (this.steer.countLeak > this.steer.countDangerMax) {
-          console.log("Game Over");
+        } else if (this.steer.countSteer > this.steer.countDangerMax) {
+          console.log("GO Steer");
+          this.over = true;
         }
 
 

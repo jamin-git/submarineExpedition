@@ -160,6 +160,9 @@ window.addEventListener("load", function(event) {
 
     }
 
+    if (game.world.over) {
+      engine.stop();
+    }
   };
 
       /////////////////
