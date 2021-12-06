@@ -670,6 +670,8 @@ Game.World = function(friction = 0.85, gravity = 2) {
 
   this.score        = 0;
 
+  this.over = false;
+
 };
 Game.World.prototype = {
 
@@ -791,7 +793,7 @@ Game.World.prototype = {
 
       // Failing to save in time, game over!
     } else if (this.lights.countLights > this.lights.countDangerMax) {
-      console.log("Game Over");
+      //console.log("Game Over");
     }
 
 
@@ -826,7 +828,7 @@ Game.World.prototype = {
     
           // Failing to save in time, game over!
         } else if (this.leak.countLeak > this.leak.countDangerMax) {
-          console.log("Game Over");
+          //console.log("Game Over");
         }
 
 
@@ -862,9 +864,9 @@ Game.World.prototype = {
     
           // Failing to save in time, game over!
         } else if (this.steer.countLeak > this.steer.countDangerMax) {
-          console.log("Game Over");
+          //console.log("Game Over");
+          over = true;
         }
-
 
 
 
