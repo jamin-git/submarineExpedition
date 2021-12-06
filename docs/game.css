@@ -58,3 +58,7 @@ canvas { image-rendering:pixelated; }
   text-decoration:none;
 
 }
+
+.hidden {
+  display: none;
+}
