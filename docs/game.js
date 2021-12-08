@@ -819,13 +819,9 @@ Game.World.prototype = {
 
       // Failing to save in time, game over!
     } else if (this.lights.countLights > this.lights.countDangerMax) {
-<<<<<<< HEAD
       
       // Ending Game
       this.over = true;
-=======
-      //console.log("Game Over");
->>>>>>> master
     }
 
 
@@ -859,12 +855,8 @@ Game.World.prototype = {
     
           // Failing to save in time, game over!
         } else if (this.leak.countLeak > this.leak.countDangerMax) {
-<<<<<<< HEAD
           // Ending Game
           this.over = true;
-=======
-          //console.log("Game Over");
->>>>>>> master
         }
 
 
@@ -898,7 +890,6 @@ Game.World.prototype = {
           }
     
           // Failing to save in time, game over!
-<<<<<<< HEAD
         } else if (this.steer.countSteer > this.steer.countDangerMax) {
           
           // Ending Game
@@ -938,11 +929,6 @@ Game.World.prototype = {
           
           // Ending Game
           this.over = true;
-=======
-        } else if (this.steer.countLeak > this.steer.countDangerMax) {
-          //console.log("Game Over");
-          over = true;
->>>>>>> master
         }
 
 
