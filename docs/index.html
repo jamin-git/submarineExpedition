@@ -4,9 +4,9 @@
 
   <head>
 
-    <!-- Added this meta tag 04/07/2018 -->
     <meta name = "viewport" content = "user-scalable=no,width=device-width">
     <link href = "game.css" rel = "stylesheet" type = "text/css">
+    <link rel="shortcut icon" type="image/jpg" href="tilesheet.png"/>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,28 +18,9 @@
 
   <body>
 
-    <canvas></canvas>
-
+    <!-- This is the anchor tag that starts the game. -->
+    <a class="" href="gamescreen.html">Click Me</a>
     
-    <script type = "text/javascript">
-      var music = new Audio('music.mp3');
-      music.volume = 0.05;
-      music.play();
-      // Defining all of the game files
-      let game = ["controller.js", "display.js", "engine.js", "game.js", "main.js"]
-      
-      // Iterating through all of the game files
-      for (let index = 0; index < game.length; index ++) {
-
-        let script = document.createElement("script");
-        script.setAttribute("type", "text/javascript");
-        script.setAttribute("src", game[index]);
-        document.head.appendChild(script);
-
-      }
-
-    </script>
-
   </body>
 
 </html>

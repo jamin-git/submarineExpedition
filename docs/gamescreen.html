@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+    
+    <!-- CSS / Meta Tags -->
+    <meta name = "viewport" content = "user-scalable=no,width=device-width">
+    <link href = "game.css" rel = "stylesheet" type = "text/css">
+    <link rel="shortcut icon" type="image/jpg" href="tilesheet.png"/>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chelsea+Market&display=swap" rel="stylesheet">
+
+    <title>Submarine Expedition</title>
+
+  </head>
+
+  <body>
+
+    <canvas></canvas>    
+
+    <script>
+      var music = new Audio('music.mp3');
+      music.volume = 0.05;
+      music.play();
+      // Defining all of the game files
+      let game = ["controller.js", "display.js", "engine.js", "game.js", "main.js"]
+    
+      // Iterating through all of the game files
+      for (let index = 0; index < game.length; index ++) {
+    
+        let script = document.createElement("script");
+        script.setAttribute("type", "text/javascript");
+        script.setAttribute("src", game[index]);
+        document.head.appendChild(script);
+      
+      }
+    </script>
+
+  </body>
+
+</html>

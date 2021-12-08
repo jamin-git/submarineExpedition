@@ -279,13 +279,12 @@ window.addEventListener("load", function(event) {
     // This ends the game
     if (game.world.over) {
       engine.stop();
-      window.alert("Game Over! Final " + p.innerHTML + ". Please refresh the page to try again");
+      restart.setAttribute('style', "color:#FFFFFF; font-size:100px; position:fixed; top: 40%; font-family: 'Chelsea Market', cursive; display: block;")
     }
   };
 
-      /////////////////
-    //// OBJECTS ////
-  /////////////////
+
+  // Objects
 
   var assets_manager = new AssetsManager();
   var controller     = new Controller();
@@ -298,10 +297,15 @@ window.addEventListener("load", function(event) {
   p.innerHTML = "Score";
   document.body.appendChild(p);
 
+  // Button that will trigger restart
+  var restart         = document.createElement("a");
+  restart.setAttribute('style', 'display: none;');
+  restart.setAttribute("href", "index.html");
+  restart.innerHTML = "Restart";
+  document.body.appendChild(restart);
 
-      ////////////////////
-    //// INITIALIZE ////
-  ////////////////////
+
+  // Initializing
 
   display.buffer.canvas.height = game.world.height;
   display.buffer.canvas.width  = game.world.width;
