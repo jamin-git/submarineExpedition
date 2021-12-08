@@ -271,6 +271,31 @@ Game.MovingObject.prototype.constructor = Game.MovingObject;
 
 
 
+// Health Bar
+Game.Health = function(x, y, type) {
+
+  Game.Object.call(this, x, y, 7, 14);
+  Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 20);
+
+  this.frame_index = Math.floor(1);
+
+  this.x = x;
+  this.y = y;
+  this.type = type;
+
+};
+
+Game.Health.prototype = {
+  frame_sets : { 
+    "danger":[8, 9],
+    "safe": [6, 7]
+  },
+};
+Object.assign(Game.Health.prototype, Game.Animator.prototype);
+Object.assign(Game.Health.prototype, Game.Object.prototype);
+Game.Health.prototype.constructor = Game.Health;
+
+
 // Lights Event
 Game.Lights = function(x, y) {
 
@@ -296,9 +321,6 @@ Game.Lights = function(x, y) {
 };
 
 Game.Lights.prototype = {
-  // frame_sets = { "danger":[8, 9],
-  //               "safe": [6, 7] }, 
-  
   frame_sets : { 
     "danger":[8, 9],
     "safe": [6, 7]
@@ -355,9 +377,6 @@ Game.Leak = function(x, y) {
 };
 
 Game.Leak.prototype = {
-  // frame_sets = { "danger":[8, 9],
-  //               "safe": [6, 7] }, 
-  
   frame_sets : { 
     "danger":[8, 9],
     "safe": [6, 7]
@@ -415,9 +434,6 @@ Game.Steer = function(x, y) {
 };
 
 Game.Steer.prototype = {
-  // frame_sets = { "danger":[8, 9],
-  //               "safe": [6, 7] }, 
-  
   frame_sets : { 
     "danger":[8, 9],
     "safe": [6, 7]
@@ -450,11 +466,11 @@ Game.Steer.prototype.constructor = Game.Steer;
 
 
 
-// Lights Event
-Game.Lights = function(x, y) {
+// Explosion Event
+Game.Explosion = function(x, y) {
 
   Game.Object.call(this, x, y, 7, 14);
-  Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 15);
+  Game.Animator.call(this, Game.Explosion.prototype.frame_sets["safe"], 22);
 
   this.frame_index = Math.floor(Math.random() * 2);
 
@@ -463,7 +479,7 @@ Game.Lights = function(x, y) {
   this.danger = true;
 
 
-  this.countLights = 0;
+  this.countExplosion = 0;
   this.countDangerMax = 10000;
   this.countSafeMax = 10000;
 
@@ -474,21 +490,18 @@ Game.Lights = function(x, y) {
   this.generateSafeMax();
 };
 
-Game.Lights.prototype = {
-  // frame_sets = { "danger":[8, 9],
-  //               "safe": [6, 7] }, 
-  
+Game.Explosion.prototype = {
   frame_sets : { 
     "danger":[8, 9],
     "safe": [6, 7]
   },
 
   toggleSafe:function() {
-    Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 15);
+    Game.Animator.call(this, Game.Explosion.prototype.frame_sets["safe"], 22);
     this.danger = false;
   },
   toggleDanger:function() {
-    Game.Animator.call(this, Game.Lights.prototype.frame_sets["danger"], 15);
+    Game.Animator.call(this, Game.Explosion.prototype.frame_sets["danger"], 22);
     this.danger = true;
   },
   killGame:function() {
@@ -504,9 +517,9 @@ Game.Lights.prototype = {
 
 
 };
-Object.assign(Game.Lights.prototype, Game.Animator.prototype);
-Object.assign(Game.Lights.prototype, Game.Object.prototype);
-Game.Lights.prototype.constructor = Game.Lights;
+Object.assign(Game.Explosion.prototype, Game.Animator.prototype);
+Object.assign(Game.Explosion.prototype, Game.Object.prototype);
+Game.Explosion.prototype.constructor = Game.Explosion;
 
 
 
@@ -639,7 +652,12 @@ Game.TileSet = function(columns, tile_size) {
     new f(65, 1, 14, 14, 0, 0), // jump-right
     new f(81, 1, 14, 14, 0, 0), // walk-right
     new f(0, 16, 14, 14, 0, 0), new f(129, 0, 14, 14, 0, 0), //lights-safe
-    new f(0, 16, 14, 14, 0, 0), new f(113, 0, 14, 14, 0, 0)  //lights-danger
+    new f(0, 16, 14, 14, 0, 0), new f(113, 0, 14, 14, 0, 0),  //lights-danger
+    new f(16, 16, 16, 16, 0, 0), // Full
+    new f(32, 16, 16, 16, 0, 0), // 3/4
+    new f(48, 16, 16, 16, 0, 0), // 1/2
+    new f(64, 16, 16, 16, 0, 0), // 1/4
+    new f(80, 16, 16, 16, 0, 0), // empty
 ];
 
 };
@@ -660,7 +678,7 @@ Game.World = function(friction = 0.85, gravity = 2) {
 
   this.zone_id      = "00";
 
-  this.lights       = undefined; // the array of carrots in this zone;
+  //this.lights       = undefined; // the array of carrots in this zone;
   this.carrot_count = 0;// the number of carrots you have.
   this.doors        = [];
   this.door         = undefined;
@@ -717,6 +735,7 @@ Game.World.prototype = {
     this.lights             = new Game.Lights(zone.lights[0] * this.tile_set.tile_size, zone.lights[1] * this.tile_set.tile_size + 2);
     this.leak               = new Game.Leak(zone.leak[0] * this.tile_set.tile_size, zone.leak[1] * this.tile_set.tile_size + 2);
     this.steer              = new Game.Steer(zone.steer[0] * this.tile_set.tile_size, zone.steer[1] * this.tile_set.tile_size + 2);
+    this.explosion          = new Game.Explosion(zone.explosion[0] * this.tile_set.tile_size, zone.explosion[1] * this.tile_set.tile_size + 2);
 
     for (let index = zone.doors.length - 1; index > -1; -- index) {
 
@@ -763,9 +782,9 @@ Game.World.prototype = {
 
     this.lights.animate();
 
-    // Checks for lights safe time is up
+    // Checking for lights event
     if (this.lights.countLights == this.lights.countSafeMax) {
-      
+      // Checks for lights safe time is up
       this.lights.countLights = 0;
       this.lights.countSafeMax = 10000;
       this.lights.toggleDanger();
@@ -792,13 +811,13 @@ Game.World.prototype = {
 
       // Failing to save in time, game over!
     } else if (this.lights.countLights > this.lights.countDangerMax) {
-      //console.log("Game Over");
-      //this.over = true;
+      
+      // Ending Game
+      this.over = true;
     }
 
 
-        // Checks for leak safe time is up
-
+        // Checking for leak event
         this.leak.animate();
         if (this.leak.countLeak == this.leak.countSafeMax) {
       
@@ -828,14 +847,13 @@ Game.World.prototype = {
     
           // Failing to save in time, game over!
         } else if (this.leak.countLeak > this.leak.countDangerMax) {
-          //console.log("Game Over");
-          //this.over = true;
+          // Ending Game
+          this.over = true;
         }
 
 
       
-        // Checks for steer safe time is up
-
+        // Checking for steer event
         this.steer.animate();
         if (this.steer.countSteer == this.steer.countSafeMax) {
       
@@ -865,7 +883,43 @@ Game.World.prototype = {
     
           // Failing to save in time, game over!
         } else if (this.steer.countSteer > this.steer.countDangerMax) {
-          console.log("GO Steer");
+          
+          // Ending Game
+          this.over = true;
+        }
+
+        // Checking for explosion event
+        this.explosion.animate();
+        if (this.explosion.countExplosion == this.explosion.countSafeMax) {
+      
+          this.explosion.countExplosion = 0;
+          this.explosion.countSafeMax = 10000;
+          this.explosion.toggleDanger();
+          this.explosion.generateDangerMax();
+          this.explosion.danger = true;
+          console.log("Safe Time Over!")
+    
+          // Saving it during danger time
+        } else if (this.explosion.countExplosion <= this.explosion.countDangerMax && this.explosion.danger) {
+          
+          if (this.explosion.collideObject(this.player) && !this.explosion.inside) {
+            this.explosion.inside = true;
+    
+            this.explosion.danger = false;
+            this.explosion.toggleSafe();
+            this.explosion.countExplosion = 0;
+            this.explosion.countDangerMax = 10000;
+            this.explosion.generateSafeMax();
+            console.log("You Saved It!");
+    
+          } else if (!this.explosion.collideObject(this.player)) {
+            this.explosion.inside = false;
+          }
+    
+          // Failing to save in time, game over!
+        } else if (this.explosion.countExplosion > this.explosion.countDangerMax) {
+          
+          // Ending Game
           this.over = true;
         }
 
@@ -892,6 +946,7 @@ Game.World.prototype = {
     this.lights.countLights++;
     this.leak.countLeak++;
     this.steer.countSteer++;
+    this.explosion.countExplosion++;
     this.score++;
 
   }

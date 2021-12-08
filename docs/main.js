@@ -99,6 +99,34 @@ window.addEventListener("load", function(event) {
     lights.x + Math.floor(lights.width * 0.5 - frame.width * 0.5) + frame.offset_x,
     lights.y + frame.offset_y, frame.width, frame.height);
 
+    // Health Bar
+    if (game.world.lights.countDangerMax != 10000) {
+      let left = game.world.lights.countDangerMax - game.world.lights.countLights;
+      let danger = game.world.lights.countDangerMax;
+
+      if (left > 0.75 * danger) {
+        frame = game.world.tile_set.frames[10];
+
+      } else if (left > 0.5 * danger) {
+        frame = game.world.tile_set.frames[11];
+
+      } else if (left > 0.25 * danger) {
+        frame = game.world.tile_set.frames[12];
+
+      } else if (left > 0.02 * danger) {
+        frame = game.world.tile_set.frames[13];
+
+      } else {
+        frame = game.world.tile_set.frames[14];
+      }
+      display.drawObject(assets_manager.tile_set_image,
+        frame.x, frame.y,
+        lights.x + Math.floor(lights.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+        lights.y - 1 + frame.offset_y, frame.width, frame.height);
+    }
+
+
+
     // Rendering the Leak Object!
     let leak = game.world.leak;
 
@@ -106,9 +134,37 @@ window.addEventListener("load", function(event) {
 
     display.drawObject(assets_manager.tile_set_image,
     frame.x, frame.y,
-    leak.x + Math.floor(leak.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+    leak.x + 5 + Math.floor(leak.width * 0.5 - frame.width * 0.5) + frame.offset_x,
     leak.y + frame.offset_y, frame.width, frame.height);
 
+    // Health Bar
+    if (game.world.leak.countDangerMax != 10000) {
+      let left = game.world.leak.countDangerMax - game.world.leak.countLeak;
+      let danger = game.world.leak.countDangerMax;
+
+      if (left > 0.75 * danger) {
+        frame = game.world.tile_set.frames[10];
+
+      } else if (left > 0.5 * danger) {
+        frame = game.world.tile_set.frames[11];
+
+      } else if (left > 0.25 * danger) {
+        frame = game.world.tile_set.frames[12];
+
+      } else if (left > 0.02 * danger) {
+        frame = game.world.tile_set.frames[13];
+
+      } else {
+        frame = game.world.tile_set.frames[14];
+      }
+      display.drawObject(assets_manager.tile_set_image,
+        frame.x, frame.y,
+        leak.x + 5 + Math.floor(leak.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+        leak.y - 1 + frame.offset_y, frame.width, frame.height);
+    }
+
+
+    
     // Rendering the Steer Object!
     let steer = game.world.steer;
 
@@ -116,10 +172,70 @@ window.addEventListener("load", function(event) {
 
     display.drawObject(assets_manager.tile_set_image,
     frame.x, frame.y,
-    steer.x + Math.floor(steer.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+    steer.x + 5 + Math.floor(steer.width * 0.5 - frame.width * 0.5) + frame.offset_x,
     steer.y + frame.offset_y, frame.width, frame.height);
 
+    // Health Bar
+    if (game.world.steer.countDangerMax != 10000) {
+      let left = game.world.steer.countDangerMax - game.world.steer.countSteer;
+      let danger = game.world.steer.countDangerMax;
 
+      if (left > 0.75 * danger) {
+        frame = game.world.tile_set.frames[10];
+
+      } else if (left > 0.5 * danger) {
+        frame = game.world.tile_set.frames[11];
+
+      } else if (left > 0.25 * danger) {
+        frame = game.world.tile_set.frames[12];
+
+      } else if (left > 0.02 * danger) {
+        frame = game.world.tile_set.frames[13];
+
+      } else {
+        frame = game.world.tile_set.frames[14];
+      }
+      display.drawObject(assets_manager.tile_set_image,
+        frame.x, frame.y,
+        steer.x + 5 + Math.floor(steer.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+        steer.y - 1 + frame.offset_y, frame.width, frame.height);
+    }
+
+    // Rendering the Explosion Object!
+    let explosion = game.world.explosion;
+    frame = game.world.tile_set
+    frame = game.world.tile_set.frames[explosion.frame_value];
+
+    display.drawObject(assets_manager.tile_set_image,
+    frame.x, frame.y,
+    explosion.x + 5 + Math.floor(explosion.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+    explosion.y + frame.offset_y, frame.width, frame.height);
+
+    // Health Bar
+    if (game.world.explosion.countDangerMax != 10000) {
+      let left = game.world.explosion.countDangerMax - game.world.explosion.countExplosion;
+      let danger = game.world.explosion.countDangerMax;
+
+      if (left > 0.75 * danger) {
+        frame = game.world.tile_set.frames[10];
+
+      } else if (left > 0.5 * danger) {
+        frame = game.world.tile_set.frames[11];
+
+      } else if (left > 0.25 * danger) {
+        frame = game.world.tile_set.frames[12];
+
+      } else if (left > 0.02 * danger) {
+        frame = game.world.tile_set.frames[13];
+
+      } else {
+        frame = game.world.tile_set.frames[14];
+      }
+      display.drawObject(assets_manager.tile_set_image,
+        frame.x, frame.y,
+        explosion.x + 5 + Math.floor(explosion.width * 0.5 - frame.width * 0.5) + frame.offset_x,
+        explosion.y - 1 + frame.offset_y, frame.width, frame.height);
+    }
 
 
     frame = game.world.tile_set.frames[game.world.player.frame_value];
@@ -160,8 +276,10 @@ window.addEventListener("load", function(event) {
 
     }
 
+    // This ends the game
     if (game.world.over) {
       engine.stop();
+      window.alert("Game Over! Final " + p.innerHTML + ". Please refresh the page to try again");
     }
   };
 
@@ -176,8 +294,8 @@ window.addEventListener("load", function(event) {
   var engine         = new Engine(1000/30, render, update);
 
   var p              = document.createElement("p");
-  p.setAttribute("style", "color:#c07000; font-size:50px; position:fixed;");
-  p.innerHTML = "Time Elapsed";
+  p.setAttribute("style", "color:#FFFFFF; font-size:50px; position:fixed; margin-left: 29%; font-family: 'Chelsea Market', cursive;");
+  p.innerHTML = "Score";
   document.body.appendChild(p);
 
 
