@@ -275,6 +275,11 @@ window.addEventListener("load", function(event) {
       return;
 
     }
+    //console.log(game.world.over);
+    if (game.world.over) {
+      engine.stop();
+      console.log("In Engine");
+    }
 
     // This ends the game
     if (game.world.over) {
