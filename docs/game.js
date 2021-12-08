@@ -1,6 +1,8 @@
 // Origin: Frank Poth
 // Update: Jacob Amin
 
+var explosion = new Audio('explosion.mp3')
+explosion.volume = 0.5;
 
 const Game = function() {
 
@@ -332,6 +334,7 @@ Game.Lights.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Lights.prototype.frame_sets["danger"], 20);
+    explosion.play();
     this.danger = true;
   },
   killGame:function() {
@@ -388,6 +391,7 @@ Game.Leak.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Leak.prototype.frame_sets["danger"], 18);
+    explosion.play();
     this.danger = true;
   },
   killGame:function() {
@@ -445,6 +449,7 @@ Game.Steer.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Steer.prototype.frame_sets["danger"], 15);
+    explosion.play();
     this.danger = true;
   },
   killGame:function() {
@@ -502,6 +507,7 @@ Game.Explosion.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Explosion.prototype.frame_sets["danger"], 22);
+    explosion.play();
     this.danger = true;
   },
   killGame:function() {
