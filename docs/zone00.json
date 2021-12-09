@@ -5,9 +5,6 @@
   "steer": [5,7],
   "explosion": [9,3],
 
-
-  "doors":[],
-
   "columns":12,
   "rows"   :9,
 

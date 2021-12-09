@@ -7,7 +7,7 @@
     <!-- CSS / Meta Tags -->
     <meta name = "viewport" content = "user-scalable=no,width=device-width">
     <link href = "game.css" rel = "stylesheet" type = "text/css">
-    <link rel="shortcut icon" type="image/jpg" href="favicon.png"/>
+    <link rel="shortcut icon" type="image/jpg" href="media/favicon.png"/>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,9 +23,10 @@
     <canvas></canvas>    
 
     <script>
-      var music = new Audio('music.mp3');
+      var music = new Audio('media/music.mp3');
       music.volume = 0.05;
       music.play();
+      music.loop = true;
       // Defining all of the game files
       let game = ["controller.js", "display.js", "engine.js", "game.js", "main.js"]
     

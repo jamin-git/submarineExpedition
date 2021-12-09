@@ -1,6 +1,4 @@
-// Frank Poth 03/09/2018
-
-/* The keyDownUp handler was moved to the main file. */
+// This file defines the controller / controls for the player
 
 const Controller = function() {
 

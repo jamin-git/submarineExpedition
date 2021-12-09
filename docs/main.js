@@ -1,19 +1,17 @@
-// Origin: Frank Poth
-// Update: Jacob Amin
+// This file loads the tilesheet and draws all the sprites onto the canvas.
 
+var loss = new Audio('media/loss.mp3');
 
 window.addEventListener("load", function(event) {
 
   "use strict";
 
-  //// CONSTANTS ////
+  // Constants
 
   const ZONE_PREFIX = "zone";
   const ZONE_SUFFIX = ".json";
 
-      /////////////////
-    //// CLASSES ////
-  /////////////////
+  // Classes
 
   const AssetsManager = function() {
 
@@ -56,9 +54,7 @@ window.addEventListener("load", function(event) {
 
   };
 
-      ///////////////////
-    //// FUNCTIONS ////
-  ///////////////////
+  // Functions
 
   var keyDownUp = function(event) {
 
@@ -283,6 +279,8 @@ window.addEventListener("load", function(event) {
 
     // This ends the game
     if (game.world.over) {
+      loss.volume = 0.5;
+      loss.play();
       engine.stop();
       restart.setAttribute('style', "color:#FFFFFF; font-size:100px; position:fixed; top: 40%; font-family: 'Chelsea Market', cursive; display: block;")
     }
@@ -320,7 +318,7 @@ window.addEventListener("load", function(event) {
 
     game.world.setup(zone);
 
-    assets_manager.requestImage("tilesheet.png", (image) => {
+    assets_manager.requestImage("media/tilesheet.png", (image) => {
 
       assets_manager.tile_set_image = image;
 
