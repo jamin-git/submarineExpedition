@@ -1,8 +1,14 @@
 // Origin: Frank Poth
 // Update: Jacob Amin
 
-var explosion = new Audio('explosion.mp3')
-explosion.volume = 0.5;
+var explosion1 = new Audio('media/explosion.mp3')
+var explosion2 = new Audio('media/explosion.mp3')
+var explosion3 = new Audio('media/explosion.mp3')
+var explosion4 = new Audio('media/explosion.mp3')
+explosion1.volume = 0.5;
+explosion2.volume = 0.5;
+explosion3.volume = 0.5;
+explosion4.volume = 0.5;
 
 const Game = function() {
 
@@ -76,7 +82,6 @@ Game.Animator.prototype = {
 
 Game.Collider = function() {
 
-  /* I changed this so all the checks happen in y first order. */
   this.collide = function(value, object, tile_x, tile_y, tile_size) {
 
     switch(value) {
@@ -199,7 +204,7 @@ Game.Object.prototype = {
 
   constructor:Game.Object,
 
-  /* Now does rectangular collision detection. */
+  // Rectangular collision
   collideObject:function(object) {
 
     if (this.getRight()  < object.getLeft()  ||
@@ -211,7 +216,7 @@ Game.Object.prototype = {
 
   },
 
-  /* Does rectangular collision detection with the center of the object. */
+  // Rectangular collision with center of the object
   collideObjectCenter:function(object) {
 
     let center_x = object.getCenterX();
@@ -251,7 +256,7 @@ Game.MovingObject = function(x, y, width, height, velocity_max = 15) {
   this.y_old        = y;
 
 };
-/* I added setCenterX, setCenterY, getCenterX, and getCenterY */
+
 Game.MovingObject.prototype = {
 
   getOldBottom : function()  { return this.y_old + this.height;       },
@@ -271,31 +276,6 @@ Game.MovingObject.prototype = {
 Object.assign(Game.MovingObject.prototype, Game.Object.prototype);
 Game.MovingObject.prototype.constructor = Game.MovingObject;
 
-
-
-// Health Bar
-Game.Health = function(x, y, type) {
-
-  Game.Object.call(this, x, y, 7, 14);
-  Game.Animator.call(this, Game.Lights.prototype.frame_sets["safe"], 20);
-
-  this.frame_index = Math.floor(1);
-
-  this.x = x;
-  this.y = y;
-  this.type = type;
-
-};
-
-Game.Health.prototype = {
-  frame_sets : { 
-    "danger":[8, 9],
-    "safe": [6, 7]
-  },
-};
-Object.assign(Game.Health.prototype, Game.Animator.prototype);
-Object.assign(Game.Health.prototype, Game.Object.prototype);
-Game.Health.prototype.constructor = Game.Health;
 
 
 // Lights Event
@@ -334,7 +314,7 @@ Game.Lights.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Lights.prototype.frame_sets["danger"], 20);
-    explosion.play();
+    explosion1.play();
     this.danger = true;
   },
   killGame:function() {
@@ -391,7 +371,7 @@ Game.Leak.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Leak.prototype.frame_sets["danger"], 18);
-    explosion.play();
+    explosion2.play();
     this.danger = true;
   },
   killGame:function() {
@@ -430,7 +410,7 @@ Game.Steer = function(x, y) {
   this.countDangerMax = 10000;
   this.countSafeMax = 10000;
 
-  // Checks if player is inside lights object
+  // Checks if player is inside steer object
   this.inside = false;
 
 
@@ -449,7 +429,7 @@ Game.Steer.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Steer.prototype.frame_sets["danger"], 15);
-    explosion.play();
+    explosion3.play();
     this.danger = true;
   },
   killGame:function() {
@@ -488,7 +468,7 @@ Game.Explosion = function(x, y) {
   this.countDangerMax = 10000;
   this.countSafeMax = 10000;
 
-  // Checks if player is inside lights object
+  // Checks if player is inside explosion object
   this.inside = false;
 
 
@@ -507,7 +487,7 @@ Game.Explosion.prototype = {
   },
   toggleDanger:function() {
     Game.Animator.call(this, Game.Explosion.prototype.frame_sets["danger"], 22);
-    explosion.play();
+    explosion4.play();
     this.danger = true;
   },
   killGame:function() {
@@ -532,18 +512,6 @@ Game.Explosion.prototype.constructor = Game.Explosion;
 
 
 
-Game.Door = function(door) {
-
- Game.Object.call(this, door.x, door.y, door.width, door.height);
-
- this.destination_x    = door.destination_x;
- this.destination_y    = door.destination_y;
- this.destination_zone = door.destination_zone;
-
-};
-Game.Door.prototype = {};
-Object.assign(Game.Door.prototype, Game.Object.prototype);
-Game.Door.prototype.constructor = Game.Door;
 
 Game.Player = function(x, y) {
 
@@ -572,7 +540,6 @@ Game.Player.prototype = {
 
   jump: function() {
 
-    /* Made it so you can only jump if you aren't falling faster than 10px per frame. */
     if (!this.jumping && this.velocity_y < 10) {
 
       this.jumping     = true;
@@ -627,7 +594,6 @@ Game.Player.prototype = {
     this.velocity_y += gravity;
     this.velocity_x *= friction;
 
-    /* Made it so that velocity cannot exceed velocity_max */
     if (Math.abs(this.velocity_x) > this.velocity_max)
     this.velocity_x = this.velocity_max * Math.sign(this.velocity_x);
 
@@ -684,10 +650,6 @@ Game.World = function(friction = 0.85, gravity = 2) {
 
   this.zone_id      = "00";
 
-  //this.lights       = undefined; // the array of carrots in this zone;
-  this.carrot_count = 0;// the number of carrots you have.
-  this.doors        = [];
-  this.door         = undefined;
 
   this.height       = this.tile_set.tile_size * this.rows;
   this.width        = this.tile_set.tile_size * this.columns;
@@ -703,10 +665,8 @@ Game.World.prototype = {
 
   constructor: Game.World,
 
+  // Collision with tiles
   collideObject:function(object) {
-
-    /* I got rid of the world boundary collision. Now it's up to the tiles to keep
-    the player from falling out of the world. */
 
     var bottom, left, right, top, value;
 
@@ -734,7 +694,6 @@ Game.World.prototype = {
 
   setup:function(zone) {
 
-    this.doors              = new Array();
     this.collision_map      = zone.collision_map;
     this.graphical_map      = zone.graphical_map;
     this.columns            = zone.columns;
@@ -744,33 +703,6 @@ Game.World.prototype = {
     this.leak               = new Game.Leak(zone.leak[0] * this.tile_set.tile_size, zone.leak[1] * this.tile_set.tile_size + 2);
     this.steer              = new Game.Steer(zone.steer[0] * this.tile_set.tile_size, zone.steer[1] * this.tile_set.tile_size + 2);
     this.explosion          = new Game.Explosion(zone.explosion[0] * this.tile_set.tile_size, zone.explosion[1] * this.tile_set.tile_size + 2);
-
-    for (let index = zone.doors.length - 1; index > -1; -- index) {
-
-      let door = zone.doors[index];
-      this.doors[index] = new Game.Door(door);
-
-    }
-
-    if (this.door) {
-
-      if (this.door.destination_x != -1) {
-
-        this.player.setCenterX   (this.door.destination_x);
-        this.player.setOldCenterX(this.door.destination_x);// It's important to reset the old position as well.
-
-      }
-
-      if (this.door.destination_y != -1) {
-
-        this.player.setCenterY   (this.door.destination_y);
-        this.player.setOldCenterY(this.door.destination_y);
-
-      }
-
-      this.door = undefined;// Make sure to reset this.door so we don't trigger a zone load.
-
-    }
 
   },
 
@@ -798,7 +730,6 @@ Game.World.prototype = {
       this.lights.toggleDanger();
       this.lights.generateDangerMax();
       this.lights.danger = true;
-      console.log("Safe Time Over!")
 
       // Saving it during danger time
     } else if (this.lights.countLights <= this.lights.countDangerMax && this.lights.danger) {
@@ -811,7 +742,6 @@ Game.World.prototype = {
         this.lights.countLights = 0;
         this.lights.countDangerMax = 10000;
         this.lights.generateSafeMax();
-        console.log("You Saved It!");
 
       } else if (!this.lights.collideObject(this.player)) {
         this.lights.inside = false;
@@ -834,7 +764,6 @@ Game.World.prototype = {
           this.leak.toggleDanger();
           this.leak.generateDangerMax();
           this.leak.danger = true;
-          console.log("Safe Time Over!")
     
           // Saving it during danger time
         } else if (this.leak.countLeak <= this.leak.countDangerMax && this.leak.danger) {
@@ -847,8 +776,7 @@ Game.World.prototype = {
             this.leak.countLeak = 0;
             this.leak.countDangerMax = 10000;
             this.leak.generateSafeMax();
-            console.log("You Saved It!");
-    
+
           } else if (!this.leak.collideObject(this.player)) {
             this.leak.inside = false;
           }
@@ -870,7 +798,6 @@ Game.World.prototype = {
           this.steer.toggleDanger();
           this.steer.generateDangerMax();
           this.steer.danger = true;
-          console.log("Safe Time Over!")
     
           // Saving it during danger time
         } else if (this.steer.countSteer <= this.steer.countDangerMax && this.steer.danger) {
@@ -883,7 +810,6 @@ Game.World.prototype = {
             this.steer.countSteer = 0;
             this.steer.countDangerMax = 10000;
             this.steer.generateSafeMax();
-            console.log("You Saved It!");
     
           } else if (!this.steer.collideObject(this.player)) {
             this.steer.inside = false;
@@ -905,7 +831,6 @@ Game.World.prototype = {
           this.explosion.toggleDanger();
           this.explosion.generateDangerMax();
           this.explosion.danger = true;
-          console.log("Safe Time Over!")
     
           // Saving it during danger time
         } else if (this.explosion.countExplosion <= this.explosion.countDangerMax && this.explosion.danger) {
@@ -918,7 +843,6 @@ Game.World.prototype = {
             this.explosion.countExplosion = 0;
             this.explosion.countDangerMax = 10000;
             this.explosion.generateSafeMax();
-            console.log("You Saved It!");
     
           } else if (!this.explosion.collideObject(this.player)) {
             this.explosion.inside = false;
@@ -930,21 +854,6 @@ Game.World.prototype = {
           // Ending Game
           this.over = true;
         }
-
-
-
-    for(let index = this.doors.length - 1; index > -1; -- index) {
-
-      let door = this.doors[index];
-
-      if (door.collideObjectCenter(this.player)) {
-
-        this.door = door;
-
-      };
-
-    }
-
 
     this.player.updateAnimation();
 
