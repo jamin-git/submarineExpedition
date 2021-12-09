@@ -1,10 +1,10 @@
 # Submarine Expedition - A 2D Survival Game
 <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/jamin-git/submarineExpedition?style=social">
-## In this game you play as a shark who's home is in a sunken submarine. After a violent earthquake hits the sea floor, lingering explosives being to fail! Using the arrow keys, you must fix each station by touching it before the timer runs out!
+In this game you play as a shark who's home is in a sunken submarine. After a violent earthquake hits the sea floor, lingering explosives being to fail! Using the arrow keys, you must fix each station by touching it before the timer runs out!
 
 # How to Play
 ## Use Arrow Keys to move
-[Play]( https://jamin-git.github.io/submarineExpedition/){: .btn }
+[Play]( https://jamin-git.github.io/submarineExpedition/)
 
 # Credits
 
