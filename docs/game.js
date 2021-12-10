@@ -1,5 +1,4 @@
-// Origin: Frank Poth
-// Update: Jacob Amin
+// This file houses all the game objects
 
 var explosion1 = new Audio('media/explosion.mp3')
 var explosion2 = new Audio('media/explosion.mp3')
