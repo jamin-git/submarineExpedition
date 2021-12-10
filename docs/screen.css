@@ -1,0 +1,28 @@
+body {
+    background: #0d1a20;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+#cr-stage {
+    background: url(https://opengameart.org/sites/default/files/preview_503.png);
+    background-size: auto 1010px;
+//margin: 500px auto 0 auto;
+}
+
+#start-game {
+    color: #aaa;
+    font-size: 32px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#start-game:hover {
+    color: #ccc;
+}
+
+span.copyright,
+span.copyright a {
+    color: #ccc;
+}
